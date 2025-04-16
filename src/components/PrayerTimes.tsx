@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -67,16 +66,20 @@ const methodNames = {
   }
 };
 
-interface PrayerTimesProps {}
+interface PrayerTimesProps {
+  initialLanguage?: "en" | "ar";
+}
 
-const PrayerTimes: React.FC<PrayerTimesProps> = () => {
+const PrayerTimes: React.FC<PrayerTimesProps> = ({ 
+  initialLanguage = "ar" 
+}) => {
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const [nextPrayerInfo, setNextPrayerInfo] = useState<any>(null);
   const [location, setLocation] = useState<any>({ latitude: null, longitude: null, city: "Loading...", country: "..." });
-  const [language, setLanguage] = useState<"en" | "ar">("en");
+  const [language, setLanguage] = useState<"en" | "ar">(initialLanguage);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calculationMethod, setCalculationMethod] = useState<string>("3"); // Default to Muslim World League
+  const [calculationMethod, setCalculationMethod] = useState<string>("4"); // Changed to Umm Al-Qura University method
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
@@ -368,7 +371,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-gray-50 pt-8 pb-12 px-4 sm:px-6 lg:px-8 islamic-pattern ${language === "ar" ? "rtl" : "ltr"}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-[#f3f4f6] to-[#e5e7eb] pt-8 pb-12 px-4 sm:px-6 lg:px-8 islamic-pattern ${language === "ar" ? "rtl" : "ltr"}`}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -376,7 +379,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = () => {
             <CompasIcon className="h-16 w-16 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-2">
-            {language === "en" ? "Prayer Times Compass" : "بوصلة أوقات الصلاة"}
+            {language === "en" ? "Prayer Times" : "أوقات الصلاة"}
           </h1>
           <p className="text-lg text-gray-600 max-w-xl mx-auto">
             {language === "en" 
@@ -442,7 +445,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = () => {
 
         {/* Next Prayer Countdown */}
         {nextPrayerInfo && (
-          <div className="bg-primary bg-opacity-10 rounded-xl shadow-md p-6 mb-6 text-center">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl shadow-md p-6 mb-6 text-center">
             <h2 className="text-lg font-medium text-gray-700">
               {language === "en" ? "Next Prayer" : "الصلاة القادمة"}
             </h2>
