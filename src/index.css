@@ -88,6 +88,49 @@
 
 /* Islamic patterns */
 .islamic-pattern {
+  position: relative;
+  background: linear-gradient(to bottom, #1A1F2C, #0C0E16);
+  overflow: hidden;
+}
+
+.islamic-pattern::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, transparent 70%);
+  border-radius: 50%;
+  transform: rotate(-45deg);
+  opacity: 0.7;
+}
+
+.islamic-pattern::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: -10%;
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.05) 50%);
+  border-radius: 50%;
+  transform: rotate(-45deg);
+  opacity: 0.5;
+}
+
+/* Subtle star-like dots */
+.islamic-pattern {
+  background-image: 
+    radial-gradient(white 1px, transparent 1px),
+    radial-gradient(white 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: 0 0, 25px 25px;
+  background-color: #1A1F2C;
+}
+
+/* Islamic moon-inspired background */
+.islamic-pattern {
   background-image: 
     linear-gradient(135deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%),
     linear-gradient(225deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%),
