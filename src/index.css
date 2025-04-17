@@ -108,23 +108,35 @@ body::before {
   z-index: -2;
 }
 
-/* Crescent moon effect */
+/* Crescent moon effect - Making it more visible */
 body::after {
   content: '';
   position: absolute;
-  top: 5%;
-  right: 5%;
-  width: 250px;
-  height: 250px;
+  top: 8%;
+  right: 8%;
+  width: 180px;
+  height: 180px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(226, 232, 240, 0.12) 0%,
-    rgba(226, 232, 240, 0.06) 50%,
+    rgba(246, 173, 85, 0.3) 0%,
+    rgba(246, 173, 85, 0.15) 50%,
     transparent 70%
   );
   border-radius: 50%;
-  box-shadow: 0 0 60px rgba(226, 232, 240, 0.1);
+  box-shadow: 0 0 80px rgba(246, 173, 85, 0.35);
   z-index: -1;
+  animation: glow 5s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.8;
+    box-shadow: 0 0 60px rgba(246, 173, 85, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 100px rgba(246, 173, 85, 0.5);
+  }
 }
 
 /* Subtle star pattern overlay */
@@ -143,8 +155,8 @@ body::after {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(rgba(226, 232, 240, 0.15) 1px, transparent 1px),
-    radial-gradient(rgba(226, 232, 240, 0.08) 1px, transparent 1px);
+    radial-gradient(rgba(246, 173, 85, 0.2) 1px, transparent 1px),
+    radial-gradient(rgba(246, 173, 85, 0.1) 1px, transparent 1px);
   background-size: 50px 50px, 120px 120px;
   background-position: 0 0, 25px 25px;
   z-index: -1;
@@ -159,8 +171,8 @@ body::after {
   height: 300px;
   background: linear-gradient(
     45deg,
-    rgba(246, 173, 85, 0.08) 0%,
-    rgba(246, 173, 85, 0.03) 50%,
+    rgba(246, 173, 85, 0.1) 0%,
+    rgba(246, 173, 85, 0.05) 50%,
     transparent 70%
   );
   border-radius: 20px;
