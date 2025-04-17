@@ -87,16 +87,16 @@
   }
 }
 
-/* Islamic patterns for dark mode */
+/* Islamic-themed background */
 body {
-  background-color: #0F172A;
-  color: #E2E8F0;
+  background-color: #14213d;
+  color: #f8f9fa;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
 }
 
-/* Main background with dark gradient */
+/* Deep blue gradient background */
 body::before {
   content: '';
   position: absolute;
@@ -104,42 +104,44 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  background: linear-gradient(135deg, #14213d 0%, #1d3557 100%);
   z-index: -2;
 }
 
-/* Crescent moon effect - Making it more visible */
+/* Golden crescent moon effect */
 body::after {
   content: '';
   position: absolute;
-  top: 8%;
+  top: 5%;
   right: 8%;
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(246, 173, 85, 0.3) 0%,
-    rgba(246, 173, 85, 0.15) 50%,
+    rgba(255, 184, 76, 0.5) 0%,
+    rgba(255, 184, 76, 0.25) 50%,
     transparent 70%
   );
   border-radius: 50%;
-  box-shadow: 0 0 80px rgba(246, 173, 85, 0.35);
+  box-shadow: 0 0 100px rgba(255, 184, 76, 0.6);
+  filter: blur(3px);
   z-index: -1;
-  animation: glow 5s ease-in-out infinite;
+  animation: moonGlow 8s ease-in-out infinite;
 }
 
-@keyframes glow {
+@keyframes moonGlow {
   0%, 100% {
     opacity: 0.8;
-    box-shadow: 0 0 60px rgba(246, 173, 85, 0.3);
+    box-shadow: 0 0 60px rgba(255, 184, 76, 0.4);
   }
   50% {
     opacity: 1;
-    box-shadow: 0 0 100px rgba(246, 173, 85, 0.5);
+    box-shadow: 0 0 120px rgba(255, 184, 76, 0.7);
+    transform: scale(1.05);
   }
 }
 
-/* Subtle star pattern overlay */
+/* Star pattern overlay */
 .islamic-pattern {
   position: relative;
   overflow: hidden;
@@ -155,11 +157,12 @@ body::after {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(rgba(246, 173, 85, 0.2) 1px, transparent 1px),
-    radial-gradient(rgba(246, 173, 85, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px, 120px 120px;
-  background-position: 0 0, 25px 25px;
+    radial-gradient(rgba(255, 184, 76, 0.25) 1px, transparent 1px),
+    radial-gradient(rgba(255, 184, 76, 0.15) 1px, transparent 1px);
+  background-size: 35px 35px, 90px 90px;
+  background-position: 0 0, 15px 15px;
   z-index: -1;
+  opacity: 0.5;
 }
 
 /* Geometric accent patterns */
@@ -167,30 +170,31 @@ body::after {
   position: absolute;
   bottom: 5%;
   left: 5%;
-  width: 300px;
-  height: 300px;
+  width: 250px;
+  height: 250px;
   background: linear-gradient(
     45deg,
-    rgba(246, 173, 85, 0.1) 0%,
-    rgba(246, 173, 85, 0.05) 50%,
+    rgba(255, 184, 76, 0.15) 0%,
+    rgba(255, 184, 76, 0.08) 50%,
     transparent 70%
   );
-  border-radius: 20px;
+  border-radius: 15px;
   transform: rotate(30deg);
   z-index: -1;
 }
 
 /* Prayer cards styling */
 .prayer-card {
-  @apply bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-700/50;
+  @apply bg-opacity-10 bg-white backdrop-blur-sm rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-opacity-20 border-white;
 }
 
 .prayer-card:hover {
-  @apply shadow-lg transform scale-[1.02] border-accent/40;
+  @apply shadow-lg transform scale-[1.02] border-accent/30 bg-opacity-15 bg-white;
 }
 
 .next-prayer {
   @apply border-l-4 border-accent;
+  background: linear-gradient(90deg, rgba(255, 184, 76, 0.2), rgba(255, 184, 76, 0.05));
 }
 
 .rtl {
@@ -215,16 +219,16 @@ body::after {
 }
 
 .prayer-method-select {
-  @apply bg-gray-800/80 border border-gray-700 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-accent/60;
+  @apply bg-opacity-10 bg-white border border-opacity-20 border-white rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-accent/60 backdrop-blur-sm text-white;
 }
 
 .language-toggle {
-  @apply flex items-center gap-2 bg-gray-800/80 border border-gray-700 rounded-full px-3 py-1 shadow-sm;
+  @apply flex items-center gap-2 bg-opacity-10 bg-white border border-opacity-20 border-white rounded-full px-3 py-1 shadow-sm backdrop-blur-sm text-white;
 }
 
 /* Custom glow effects */
 .accent-glow {
-  text-shadow: 0 0 15px rgba(246, 173, 85, 0.7);
+  text-shadow: 0 0 15px rgba(255, 184, 76, 0.7);
 }
 
 .primary-glow {
@@ -233,11 +237,11 @@ body::after {
 
 /* Buttons and interactive elements */
 button, select, input {
-  @apply bg-gray-800/90 border border-gray-700 hover:border-accent/50 rounded-lg px-4 py-2 transition-all duration-300;
+  @apply bg-opacity-10 bg-white border border-opacity-20 border-white hover:border-accent/40 rounded-lg px-4 py-2 transition-all duration-300 backdrop-blur-sm;
 }
 
 button:hover {
-  @apply bg-gray-700/90 shadow-lg shadow-accent/10;
+  @apply bg-opacity-15 bg-white shadow-lg shadow-accent/10;
 }
 
 /* Headers and important text */
@@ -248,4 +252,41 @@ h1, h2, h3 {
 /* Time display */
 .time-display {
   @apply text-accent font-medium;
+}
+
+/* Prayer time countdown container */
+.countdown-container {
+  background: linear-gradient(135deg, rgba(21, 36, 71, 0.7) 0%, rgba(29, 53, 87, 0.7) 100%);
+  @apply backdrop-blur-md border border-opacity-30 border-white rounded-xl shadow-lg;
+}
+
+/* Special times section */
+.special-times-container {
+  background: linear-gradient(135deg, rgba(21, 36, 71, 0.8) 0%, rgba(29, 53, 87, 0.8) 100%);
+  @apply backdrop-blur-md border border-opacity-20 border-white rounded-xl shadow-lg;
+}
+
+/* Header section */
+.header-container {
+  background: linear-gradient(to bottom, rgba(20, 33, 61, 0.7), transparent);
+  @apply backdrop-blur-sm py-8 mb-8 rounded-b-3xl;
+}
+
+/* Location info card */
+.location-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%);
+  @apply backdrop-blur-md border border-opacity-20 border-white rounded-xl shadow-md;
+}
+
+/* Islamic geometric pattern divider */
+.geometric-divider {
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255, 184, 76, 0.7), transparent);
+  @apply my-4 rounded-full;
+}
+
+/* Footer styling */
+.app-footer {
+  background: linear-gradient(to top, rgba(20, 33, 61, 0.7), transparent);
+  @apply backdrop-blur-sm py-4 mt-8 rounded-t-3xl text-opacity-70 text-white;
 }

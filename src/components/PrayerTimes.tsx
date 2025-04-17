@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -371,17 +372,18 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-[#f3f4f6] to-[#e5e7eb] pt-8 pb-12 px-4 sm:px-6 lg:px-8 islamic-pattern ${language === "ar" ? "rtl" : "ltr"}`}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen islamic-pattern ${language === "ar" ? "rtl" : "ltr"}`}>
+      <div className="geometric-accent"></div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="header-container text-center">
           <div className="flex justify-center mb-4">
-            <CompasIcon className="h-16 w-16 text-primary" />
+            <CompasIcon className="h-16 w-16 text-accent animate-pulse" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-2">
+          <h1 className="text-3xl font-bold text-white sm:text-4xl mb-2 accent-glow">
             {language === "en" ? "Prayer Times" : "أوقات الصلاة"}
           </h1>
-          <p className="text-lg text-gray-600 max-w-xl mx-auto">
+          <p className="text-lg text-gray-200 max-w-xl mx-auto">
             {language === "en" 
               ? "Islamic prayer times, midnight, and last third of night calculations" 
               : "حساب أوقات الصلاة الإسلامية ومنتصف الليل والثلث الأخير من الليل"}
@@ -389,14 +391,14 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         </div>
 
         {/* Location and Date Info */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+        <div className="location-card p-4 mb-6">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <div>
-              <h2 className="text-lg font-medium text-gray-900">
+              <h2 className="text-lg font-medium text-white">
                 {language === "en" ? "Location" : "الموقع"}: {location.city}, {location.country}
               </h2>
               
-              <div className="flex items-center text-gray-600 mt-1">
+              <div className="flex items-center text-gray-300 mt-1">
                 <span>
                   {language === "en" 
                     ? formatDate(new Date(), "en") 
@@ -406,7 +408,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                   <span className="mx-2">|</span>
                 )}
                 {hijriDate && (
-                  <span>
+                  <span className="text-accent">
                     {language === "en" 
                       ? `${hijriDate.day} ${hijriDate.month.en} ${hijriDate.year} AH` 
                       : `${hijriDate.day} ${hijriDate.month.ar} ${hijriDate.year} هـ`}
@@ -419,7 +421,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               {/* Language Toggle */}
               <button 
                 onClick={toggleLanguage} 
-                className="language-toggle hover:bg-gray-50"
+                className="language-toggle hover:bg-opacity-20"
               >
                 <span className={language === "en" ? "font-bold" : ""}>EN</span>
                 <span>/</span>
@@ -445,20 +447,20 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
 
         {/* Next Prayer Countdown */}
         {nextPrayerInfo && (
-          <div className="bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl shadow-md p-6 mb-6 text-center">
-            <h2 className="text-lg font-medium text-gray-700">
+          <div className="countdown-container p-6 mb-6 text-center">
+            <h2 className="text-lg font-medium text-gray-200">
               {language === "en" ? "Next Prayer" : "الصلاة القادمة"}
             </h2>
             <div className="mt-2">
-              <span className="text-2xl font-bold text-primary">{prayerNames[language][nextPrayerInfo.name as keyof typeof prayerNames.en] || nextPrayerInfo.name}</span>
-              <span className="mx-2 text-gray-600">|</span>
-              <span className="text-xl font-medium text-gray-900">
+              <span className="text-2xl font-bold text-accent accent-glow">{prayerNames[language][nextPrayerInfo.name as keyof typeof prayerNames.en] || nextPrayerInfo.name}</span>
+              <span className="mx-2 text-gray-400">|</span>
+              <span className="text-xl font-medium text-white">
                 {language === "en" 
                   ? convertTo12HourFormat(format(nextPrayerInfo.time, 'HH:mm'))
                   : format(nextPrayerInfo.time, 'HH:mm')}
               </span>
             </div>
-            <div className="mt-2 text-3xl font-bold text-primary pulse-animation">
+            <div className="mt-3 text-3xl font-bold text-accent pulse-animation accent-glow">
               {countdownTime}
             </div>
           </div>
@@ -466,17 +468,17 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
 
         {isLoading ? (
           <div className="text-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent mx-auto"></div>
+            <p className="mt-4 text-gray-300">
               {language === "en" ? "Loading prayer times..." : "جارٍ تحميل أوقات الصلاة..."}
             </p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+          <div className="bg-red-900/20 text-red-200 p-4 rounded-lg border border-red-500/30 backdrop-blur-sm">
             <p>{error}</p>
             <button 
               onClick={() => window.location.reload()} 
-              className="mt-2 px-4 py-2 bg-red-100 rounded-md hover:bg-red-200"
+              className="mt-2 px-4 py-2 bg-red-900/30 rounded-md hover:bg-red-800/40"
             >
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>
@@ -493,10 +495,10 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                     className={`prayer-card p-4 ${nextPrayerInfo && nextPrayerInfo.name === key ? 'next-prayer' : ''}`}
                   >
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-white">
                         {prayerNames[language][key as keyof typeof prayerNames.en] || key}
                       </h3>
-                      <div className="text-xl font-semibold text-primary">
+                      <div className="text-xl font-semibold text-accent">
                         {language === "en" 
                           ? convertTo12HourFormat(time as string)
                           : time as string}
@@ -507,18 +509,20 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               }
             </div>
 
+            <div className="geometric-divider"></div>
+
             {/* Special Times (Midnight and Last Third) */}
-            <div className="bg-gray-800 text-white rounded-xl shadow-md p-4 mb-4">
-              <h3 className="text-lg font-medium mb-2 text-center">
+            <div className="special-times-container p-4 mb-4">
+              <h3 className="text-lg font-medium mb-3 text-center text-white">
                 {language === "en" ? "Special Times" : "أوقات خاصة"}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {prayerTimes && (
                   <>
-                    <div className="flex justify-between items-center border border-gray-700 rounded-lg p-3">
+                    <div className="flex justify-between items-center border border-white/10 rounded-lg p-3 bg-white/5 backdrop-blur-sm">
                       <div className="flex items-center gap-2">
                         <MoonIcon className="w-5 h-5 text-accent" />
-                        <h4 className="font-medium">
+                        <h4 className="font-medium text-white">
                           {prayerNames[language].midnight}
                         </h4>
                       </div>
@@ -529,10 +533,10 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center border border-gray-700 rounded-lg p-3">
+                    <div className="flex justify-between items-center border border-white/10 rounded-lg p-3 bg-white/5 backdrop-blur-sm">
                       <div className="flex items-center gap-2">
                         <MoonIcon className="w-5 h-5 text-accent" />
-                        <h4 className="font-medium">
+                        <h4 className="font-medium text-white">
                           {prayerNames[language].lastThird}
                         </h4>
                       </div>
@@ -550,7 +554,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         )}
 
         {/* Footer */}
-        <div className="text-center text-gray-500 text-sm mt-8 pt-4 border-t border-gray-200">
+        <div className="app-footer text-center text-sm mt-8 pt-4">
           <p>
             {language === "en" 
               ? "Prayer times calculated using Aladhan API" 
