@@ -85,14 +85,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 15px rgba(246, 173, 85, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 30px rgba(246, 173, 85, 0.8)' 
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'glow': 'glow 3s ease-in-out infinite'
 			},
 			fontFamily: {
 				'tajawal': ['Tajawal', 'sans-serif'],
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 90deg at 50% 50%, var(--tw-gradient-stops))',
 			}
 		}
 	},

@@ -1,69 +1,40 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 42 87% 65%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
     --primary: 143 64% 24%;
     --primary-foreground: 210 40% 98%;
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+
     --accent: 41 75% 50%;
     --accent-foreground: 210 40% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -71,6 +42,36 @@
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 42 87% 65%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -86,82 +87,94 @@
   }
 }
 
-/* Islamic patterns */
+/* Islamic patterns for dark mode */
+body {
+  background-color: #0F172A;
+  color: #E2E8F0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Main background with dark gradient */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  z-index: -2;
+}
+
+/* Crescent moon effect */
+body::after {
+  content: '';
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(226, 232, 240, 0.12) 0%,
+    rgba(226, 232, 240, 0.06) 50%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  box-shadow: 0 0 60px rgba(226, 232, 240, 0.1);
+  z-index: -1;
+}
+
+/* Subtle star pattern overlay */
 .islamic-pattern {
   position: relative;
-  background: linear-gradient(135deg, #1A1F2C 0%, #0C0E16 100%);
   overflow: hidden;
+  width: 100%;
   min-height: 100vh;
 }
 
 .islamic-pattern::before {
   content: '';
   position: absolute;
-  top: -10%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle at center, 
-    rgba(215, 188, 250, 0.1) 0%, 
-    rgba(215, 188, 250, 0.05) 50%, 
-    transparent 70%
-  );
-  border-radius: 50%;
-  transform: rotate(-45deg);
-  opacity: 0.7;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(rgba(226, 232, 240, 0.15) 1px, transparent 1px),
+    radial-gradient(rgba(226, 232, 240, 0.08) 1px, transparent 1px);
+  background-size: 50px 50px, 120px 120px;
+  background-position: 0 0, 25px 25px;
+  z-index: -1;
 }
 
-.islamic-pattern::after {
-  content: '';
+/* Geometric accent patterns */
+.geometric-accent {
   position: absolute;
-  top: 10%;
-  right: -15%;
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(
-    225deg, 
-    transparent 40%, 
-    rgba(51, 195, 240, 0.05) 60%
-  );
-  border-radius: 50%;
-  transform: rotate(-45deg);
-  opacity: 0.5;
-}
-
-/* Crescent Moon Design */
-.crescent-moon {
-  position: absolute;
-  top: 15%;
-  right: -10%;
+  bottom: 5%;
+  left: 5%;
   width: 300px;
   height: 300px;
   background: linear-gradient(
-    135deg, 
-    transparent 30%, 
-    rgba(214, 188, 250, 0.2) 50%, 
+    45deg,
+    rgba(246, 173, 85, 0.08) 0%,
+    rgba(246, 173, 85, 0.03) 50%,
     transparent 70%
   );
-  border-radius: 50%;
-  transform: rotate(-45deg);
-  box-shadow: 0 0 100px rgba(214, 188, 250, 0.3);
+  border-radius: 20px;
+  transform: rotate(30deg);
+  z-index: -1;
 }
 
-/* Subtle Star Background */
-.islamic-pattern {
-  background-image: 
-    radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-    radial-gradient(rgba(255,255,255,0.05) 2px, transparent 2px);
-  background-size: 150px 150px;
-  background-position: 0 0, 75px 75px;
-}
-
+/* Prayer cards styling */
 .prayer-card {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300;
+  @apply bg-gray-800/60 backdrop-blur-sm rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-700/50;
 }
 
 .prayer-card:hover {
-  @apply shadow-lg transform scale-[1.02];
+  @apply shadow-lg transform scale-[1.02] border-accent/40;
 }
 
 .next-prayer {
@@ -190,9 +203,37 @@
 }
 
 .prayer-method-select {
-  @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary;
+  @apply bg-gray-800/80 border border-gray-700 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-accent/60;
 }
 
 .language-toggle {
-  @apply flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full px-3 py-1 shadow-sm;
+  @apply flex items-center gap-2 bg-gray-800/80 border border-gray-700 rounded-full px-3 py-1 shadow-sm;
+}
+
+/* Custom glow effects */
+.accent-glow {
+  text-shadow: 0 0 15px rgba(246, 173, 85, 0.7);
+}
+
+.primary-glow {
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+}
+
+/* Buttons and interactive elements */
+button, select, input {
+  @apply bg-gray-800/90 border border-gray-700 hover:border-accent/50 rounded-lg px-4 py-2 transition-all duration-300;
+}
+
+button:hover {
+  @apply bg-gray-700/90 shadow-lg shadow-accent/10;
+}
+
+/* Headers and important text */
+h1, h2, h3 {
+  @apply font-bold text-white;
+}
+
+/* Time display */
+.time-display {
+  @apply text-accent font-medium;
 }
