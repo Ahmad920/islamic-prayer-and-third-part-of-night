@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/prayer-times/', // سيتم استبدال هذا باسم مشروعك على GitHub
+  base: '/islamic-prayer-and-third-part-of-night/', // سيتم استبدال هذا باسم مشروعك على GitHub
   server: {
     host: "::",
     port: 8080,
