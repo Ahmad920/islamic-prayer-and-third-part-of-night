@@ -328,6 +328,12 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     return () => clearInterval(timer);
   }, [nextPrayerInfo]);
 
+  useEffect(() => {
+    if (prayerTimes) {
+      determineNextPrayer();
+    }
+  }, [prayerTimes]);
+
   const formatDate = (date: Date, lang: "en" | "ar") => {
     return format(date, 'EEEE, MMMM d, yyyy', {
       locale: lang === "en" ? enUS : ar
