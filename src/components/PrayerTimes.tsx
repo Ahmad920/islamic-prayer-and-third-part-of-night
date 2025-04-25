@@ -3,248 +3,26 @@ import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import CompasIcon from "./CompasIcon";
 import MoonIcon from "./MoonIcon";
-
-const prayerNames = {
-  en: {
-    fajr: "Fajr",
-    sunrise: "Sunrise",
-    dhuhr: "Dhuhr",
-    asr: "Asr",
-    maghrib: "Maghrib",
-    isha: "Isha",
-    midnight: "Islamic Midnight",
-    lastThird: "Last Third of Night",
-  },
-  ar: {
-    fajr: "الفجر",
-    sunrise: "الشروق",
-    dhuhr: "الظهر",
-    asr: "العصر",
-    maghrib: "المغرب",
-    isha: "العشاء",
-    midnight: "منتصف الليل الشرعي",
-    lastThird: "الثلث الأخير من الليل",
-  },
-};
-
-const methodNames = {
-  en: {
-    0: "Shia Ithna-Ansari",
-    1: "University of Islamic Sciences, Karachi",
-    2: "Islamic Society of North America",
-    3: "Muslim World League",
-    4: "Umm Al-Qura University, Makkah",
-    5: "Egyptian General Authority of Survey",
-    7: "Institute of Geophysics, University of Tehran",
-    8: "Gulf Region",
-    9: "Kuwait",
-    10: "Qatar",
-    11: "Majlis Ugama Islam Singapura, Singapore",
-    12: "Union Organization Islamic de France",
-    13: "Diyanet İşleri Başkanlığı, Turkey",
-    14: "Spiritual Administration of Muslims of Russia",
-    15: "Moonsighting Committee Worldwide"
-  },
-  ar: {
-    0: "الشيعة الإثنا عشرية",
-    1: "جامعة العلوم الإسلامية، كراتشي",
-    2: "الجمعية الإسلامية لأمريكا الشمالية",
-    3: "رابطة العالم الإسلامي",
-    4: "جامعة أم القرى، مكة المكرمة",
-    5: "الهيئة المصرية العامة للمساحة",
-    7: "معهد الجيوفيزياء، جامعة طهران",
-    8: "منطقة الخليج",
-    9: "الكويت",
-    10: "قطر",
-    11: "مجلس أوغاما الإسلامي سنغافورة",
-    12: "اتحاد المنظمات الإسلامية في فرنسا",
-    13: "رئاسة الشؤون الدينية، تركيا",
-    14: "الإدارة الروحية لمسلمي روسيا",
-    15: "لجنة استطلاع الهلال العالمية"
-  }
-};
+import { useLocation } from "@/hooks/useLocation";
+import { determineNextPrayer, calculateSpecialTimes, convertTo12HourFormat } from "@/utils/prayerUtils";
+import { HijriDate, NextPrayerInfo, PrayerTime } from "@/types/prayer";
+import PrayerCountdown from "./PrayerCountdown";
+import { prayerNames, methodNames } from "@/constants/prayerNames";
 
 interface PrayerTimesProps {
   initialLanguage?: "en" | "ar";
 }
 
-const PrayerTimes: React.FC<PrayerTimesProps> = ({ 
-  initialLanguage = "ar" 
-}) => {
-  const [prayerTimes, setPrayerTimes] = useState<any>(null);
-  const [nextPrayerInfo, setNextPrayerInfo] = useState<any>(null);
-  const [location, setLocation] = useState<any>({ latitude: null, longitude: null, city: "Loading...", country: "..." });
+const PrayerTimes: React.FC<PrayerTimesProps> = ({ initialLanguage = "ar" }) => {
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTime | null>(null);
+  const [nextPrayerInfo, setNextPrayerInfo] = useState<NextPrayerInfo | null>(null);
   const [language, setLanguage] = useState<"en" | "ar">(initialLanguage);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [calculationMethod, setCalculationMethod] = useState<string>("4");
-  const [hijriDate, setHijriDate] = useState<any>(null);
-  const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
+  const [hijriDate, setHijriDate] = useState<HijriDate | null>(null);
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
 
-  const getLocationByIP = async () => {
-    try {
-      const response = await fetch("https://ipapi.co/json/");
-      const data = await response.json();
-      return {
-        latitude: data.latitude,
-        longitude: data.longitude,
-        city: data.city,
-        country: data.country_name,
-        source: "ip"
-      };
-    } catch (error) {
-      console.error("Error getting location by IP:", error);
-      return null;
-    }
-  };
-
-  const getLocationByBrowser = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error("Geolocation is not supported by your browser"));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            city: "Current Location",
-            country: "",
-            source: "browser"
-          });
-        },
-        (error) => {
-          reject(error);
-        }
-      );
-    });
-  };
-
-  const getUserLocation = async () => {
-    try {
-      setIsLoading(true);
-      const ipLocation = await getLocationByIP();
-      
-      if (ipLocation && ipLocation.latitude && ipLocation.longitude) {
-        setLocation(ipLocation);
-        return ipLocation;
-      }
-      
-      try {
-        const browserLocation = await getLocationByBrowser();
-        setLocation(browserLocation);
-        return browserLocation;
-      } catch (geoError) {
-        throw new Error("Could not determine your location. Please enter it manually.");
-      }
-    } catch (error) {
-      console.error("Error getting user location:", error);
-      setError(error instanceof Error ? error.message : "Unknown error getting location");
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const convertTo12HourFormat = (time24: string) => {
-    const [hours, minutes] = time24.split(':');
-    const hour = parseInt(hours, 10);
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${period}`;
-  };
-
-  const parseTimeString = (timeStr: string, date: Date = new Date()) => {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
-    return newDate;
-  };
-
-  const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string, date: Date) => {
-    const maghribDate = parseTimeString(maghribTime, date);
-    
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const fajrDate = parseTimeString(nextFajrTime, nextDay);
-    
-    const nightDuration = fajrDate.getTime() - maghribDate.getTime();
-    
-    const midnightTime = new Date(maghribDate.getTime() + nightDuration / 2);
-    
-    const lastThirdTime = new Date(maghribDate.getTime() + (nightDuration * 2) / 3);
-    
-    return {
-      midnight: format(midnightTime, 'HH:mm'),
-      lastThird: format(lastThirdTime, 'HH:mm')
-    };
-  };
-
-  const calculateCountdown = () => {
-    if (!nextPrayerInfo) return;
-
-    const now = new Date();
-    const nextPrayerTime = nextPrayerInfo.time;
-    const difference = nextPrayerTime.getTime() - now.getTime();
-
-    if (difference <= 0) {
-      determineNextPrayer();
-      return;
-    }
-
-    let seconds = Math.floor(difference / 1000);
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
-
-    seconds %= 60;
-    minutes %= 60;
-
-    const formattedHours = hours.toString().padStart(2, '0');
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    const formattedSeconds = seconds.toString().padStart(2, '0');
-
-    setCountdownTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
-  };
-
-  const determineNextPrayer = () => {
-    if (!prayerTimes) return;
-
-    const now = new Date();
-    const allTimes = [
-      { name: 'fajr', time: parseTimeString(prayerTimes.fajr) },
-      { name: 'sunrise', time: parseTimeString(prayerTimes.sunrise) },
-      { name: 'dhuhr', time: parseTimeString(prayerTimes.dhuhr) },
-      { name: 'asr', time: parseTimeString(prayerTimes.asr) },
-      { name: 'maghrib', time: parseTimeString(prayerTimes.maghrib) },
-      { name: 'isha', time: parseTimeString(prayerTimes.isha) },
-      { name: 'midnight', time: parseTimeString(prayerTimes.midnight) },
-      { name: 'lastThird', time: parseTimeString(prayerTimes.lastThird) }
-    ];
-
-    const tomorrowFajrTime = parseTimeString(tomorrowFajr);
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrowFajrTime.setDate(tomorrow.getDate());
-    
-    allTimes.push({ name: 'fajr-tomorrow', time: tomorrowFajrTime });
-
-    allTimes.sort((a, b) => a.time.getTime() - b.time.getTime());
-
-    for (let i = 0; i < allTimes.length; i++) {
-      if (allTimes[i].time > now) {
-        setNextPrayerInfo({
-          name: allTimes[i].name === 'fajr-tomorrow' ? 'fajr' : allTimes[i].name,
-          time: allTimes[i].time
-        });
-        return;
-      }
-    }
-
-    setNextPrayerInfo({ name: 'fajr', time: allTimes[0].time });
-  };
+  const { location, error: locationError, getUserLocation } = useLocation();
 
   const fetchPrayerTimes = async (lat: number, lng: number, method: string) => {
     try {
@@ -256,14 +34,12 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       const dateStr = format(date, 'dd-MM-yyyy');
       const tomorrowStr = format(tomorrow, 'dd-MM-yyyy');
 
-      const response = await fetch(
-        `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}`
-      );
-      const data = await response.json();
+      const [response, tomorrowResponse] = await Promise.all([
+        fetch(`https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}`),
+        fetch(`https://api.aladhan.com/v1/timings/${tomorrowStr}?latitude=${lat}&longitude=${lng}&method=${method}`)
+      ]);
 
-      const tomorrowResponse = await fetch(
-        `https://api.aladhan.com/v1/timings/${tomorrowStr}?latitude=${lat}&longitude=${lng}&method=${method}`
-      );
+      const data = await response.json();
       const tomorrowData = await tomorrowResponse.json();
 
       if (data.code === 200 && tomorrowData.code === 200) {
@@ -288,19 +64,18 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
 
         setHijriDate(data.data.date.hijri);
 
-        setPrayerTimes({
+        const allTimes = {
           ...formattedTimes,
           midnight: specialTimes.midnight,
           lastThird: specialTimes.lastThird
-        });
+        };
 
-        setTimeout(determineNextPrayer, 0);
-      } else {
-        throw new Error("Failed to fetch prayer times");
+        setPrayerTimes(allTimes);
+        const nextPrayer = determineNextPrayer(allTimes, tomorrowFajr);
+        if (nextPrayer) setNextPrayerInfo(nextPrayer);
       }
     } catch (error) {
       console.error("Error fetching prayer times:", error);
-      setError("Failed to fetch prayer times. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -309,7 +84,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   useEffect(() => {
     const initializeApp = async () => {
       const locationData = await getUserLocation();
-      if (locationData && locationData.latitude && locationData.longitude) {
+      if (locationData?.latitude && locationData?.longitude) {
         fetchPrayerTimes(locationData.latitude, locationData.longitude, calculationMethod);
       }
     };
@@ -322,11 +97,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       fetchPrayerTimes(location.latitude, location.longitude, calculationMethod);
     }
   }, [calculationMethod]);
-
-  useEffect(() => {
-    const timer = setInterval(calculateCountdown, 1000);
-    return () => clearInterval(timer);
-  }, [nextPrayerInfo]);
 
   const formatDate = (date: Date, lang: "en" | "ar") => {
     return format(date, 'EEEE, MMMM d, yyyy', {
