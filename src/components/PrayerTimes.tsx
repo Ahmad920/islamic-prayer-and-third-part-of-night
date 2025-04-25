@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import CompasIcon from "./CompasIcon";
 import MoonIcon from "./MoonIcon";
 
-// Define prayer names in both languages
 const prayerNames = {
   en: {
     fajr: "Fajr",
@@ -29,7 +27,6 @@ const prayerNames = {
   },
 };
 
-// Method names for UI display
 const methodNames = {
   en: {
     0: "Shia Ithna-Ansari",
@@ -80,12 +77,11 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [language, setLanguage] = useState<"en" | "ar">(initialLanguage);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calculationMethod, setCalculationMethod] = useState<string>("4"); // Changed to Umm Al-Qura University method
+  const [calculationMethod, setCalculationMethod] = useState<string>("4");
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
 
-  // Get user's location based on IP first
   const getLocationByIP = async () => {
     try {
       const response = await fetch("https://ipapi.co/json/");
@@ -103,7 +99,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     }
   };
 
-  // Fallback to browser geolocation
   const getLocationByBrowser = (): Promise<any> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
@@ -128,11 +123,9 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     });
   };
 
-  // Get user location with fallback
   const getUserLocation = async () => {
     try {
       setIsLoading(true);
-      // Try IP-based location first
       const ipLocation = await getLocationByIP();
       
       if (ipLocation && ipLocation.latitude && ipLocation.longitude) {
@@ -140,7 +133,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         return ipLocation;
       }
       
-      // Fallback to browser geolocation
       try {
         const browserLocation = await getLocationByBrowser();
         setLocation(browserLocation);
@@ -157,7 +149,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     }
   };
 
-  // Convert 24hr format to 12hr format
   const convertTo12HourFormat = (time24: string) => {
     const [hours, minutes] = time24.split(':');
     const hour = parseInt(hours, 10);
@@ -166,7 +157,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     return `${hour12}:${minutes} ${period}`;
   };
 
-  // Parse time string to Date object
   const parseTimeString = (timeStr: string, date: Date = new Date()) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
     const newDate = new Date(date);
@@ -174,22 +164,17 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     return newDate;
   };
 
-  // Calculate Islamic midnight and last third of night
   const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string, date: Date) => {
     const maghribDate = parseTimeString(maghribTime, date);
     
-    // For next day's Fajr, we need to use the next day's date
     const nextDay = new Date(date);
     nextDay.setDate(nextDay.getDate() + 1);
     const fajrDate = parseTimeString(nextFajrTime, nextDay);
     
-    // Calculate total night duration in milliseconds
     const nightDuration = fajrDate.getTime() - maghribDate.getTime();
     
-    // Islamic midnight is halfway between Maghrib and Fajr
     const midnightTime = new Date(maghribDate.getTime() + nightDuration / 2);
     
-    // Last third of night starts at 2/3 of the night duration after Maghrib
     const lastThirdTime = new Date(maghribDate.getTime() + (nightDuration * 2) / 3);
     
     return {
@@ -198,7 +183,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     };
   };
 
-  // Calculate countdown to next prayer
   const calculateCountdown = () => {
     if (!nextPrayerInfo) return;
 
@@ -211,7 +195,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       return;
     }
 
-    // Convert to hours, minutes, seconds
     let seconds = Math.floor(difference / 1000);
     let minutes = Math.floor(seconds / 60);
     let hours = Math.floor(minutes / 60);
@@ -219,7 +202,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     seconds %= 60;
     minutes %= 60;
 
-    // Format with leading zeros
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
     const formattedSeconds = seconds.toString().padStart(2, '0');
@@ -227,44 +209,43 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     setCountdownTime(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
   };
 
-  // Determine which prayer is next
   const determineNextPrayer = () => {
     if (!prayerTimes) return;
 
     const now = new Date();
-    const prayers = [
+    const allTimes = [
       { name: 'fajr', time: parseTimeString(prayerTimes.fajr) },
       { name: 'sunrise', time: parseTimeString(prayerTimes.sunrise) },
       { name: 'dhuhr', time: parseTimeString(prayerTimes.dhuhr) },
       { name: 'asr', time: parseTimeString(prayerTimes.asr) },
       { name: 'maghrib', time: parseTimeString(prayerTimes.maghrib) },
-      { name: 'isha', time: parseTimeString(prayerTimes.isha) }
+      { name: 'isha', time: parseTimeString(prayerTimes.isha) },
+      { name: 'midnight', time: parseTimeString(prayerTimes.midnight) },
+      { name: 'lastThird', time: parseTimeString(prayerTimes.lastThird) }
     ];
 
-    // Add tomorrow's Fajr for completion of the day cycle
     const tomorrowFajrTime = parseTimeString(tomorrowFajr);
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrowFajrTime.setDate(tomorrow.getDate());
     
-    prayers.push({ name: 'fajr-tomorrow', time: tomorrowFajrTime });
+    allTimes.push({ name: 'fajr-tomorrow', time: tomorrowFajrTime });
 
-    // Find the next prayer
-    for (let i = 0; i < prayers.length; i++) {
-      if (prayers[i].time > now) {
+    allTimes.sort((a, b) => a.time.getTime() - b.time.getTime());
+
+    for (let i = 0; i < allTimes.length; i++) {
+      if (allTimes[i].time > now) {
         setNextPrayerInfo({
-          name: prayers[i].name === 'fajr-tomorrow' ? 'fajr' : prayers[i].name,
-          time: prayers[i].time
+          name: allTimes[i].name === 'fajr-tomorrow' ? 'fajr' : allTimes[i].name,
+          time: allTimes[i].time
         });
         return;
       }
     }
 
-    // If no next prayer found (shouldn't happen with tomorrow's Fajr included)
-    setNextPrayerInfo({ name: 'fajr', time: prayers[0].time });
+    setNextPrayerInfo({ name: 'fajr', time: allTimes[0].time });
   };
 
-  // Fetch prayer times
   const fetchPrayerTimes = async (lat: number, lng: number, method: string) => {
     try {
       setIsLoading(true);
@@ -272,29 +253,24 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       const tomorrow = new Date(date);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      // Format dates for API
       const dateStr = format(date, 'dd-MM-yyyy');
       const tomorrowStr = format(tomorrow, 'dd-MM-yyyy');
 
-      // Fetch today's prayer times
       const response = await fetch(
         `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}`
       );
       const data = await response.json();
 
-      // Fetch tomorrow's prayer times (for Fajr)
       const tomorrowResponse = await fetch(
         `https://api.aladhan.com/v1/timings/${tomorrowStr}?latitude=${lat}&longitude=${lng}&method=${method}`
       );
       const tomorrowData = await tomorrowResponse.json();
 
       if (data.code === 200 && tomorrowData.code === 200) {
-        // Get prayer times
         const times = data.data.timings;
         const tomorrowFajr = tomorrowData.data.timings.Fajr;
         setTomorrowFajr(tomorrowFajr);
 
-        // Format to lowercase keys for consistency
         const formattedTimes = {
           fajr: times.Fajr,
           sunrise: times.Sunrise,
@@ -304,24 +280,20 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           isha: times.Isha
         };
 
-        // Calculate Islamic midnight and last third of night
         const specialTimes = calculateSpecialTimes(
           times.Maghrib, 
           tomorrowFajr,
           date
         );
 
-        // Set Hijri date
         setHijriDate(data.data.date.hijri);
 
-        // Set all prayer times including special times
         setPrayerTimes({
           ...formattedTimes,
           midnight: specialTimes.midnight,
           lastThird: specialTimes.lastThird
         });
 
-        // Determine next prayer
         setTimeout(determineNextPrayer, 0);
       } else {
         throw new Error("Failed to fetch prayer times");
@@ -334,7 +306,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     }
   };
 
-  // Initialize location and prayer times
   useEffect(() => {
     const initializeApp = async () => {
       const locationData = await getUserLocation();
@@ -346,27 +317,23 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     initializeApp();
   }, []);
 
-  // Update prayer times when calculation method changes
   useEffect(() => {
     if (location.latitude && location.longitude) {
       fetchPrayerTimes(location.latitude, location.longitude, calculationMethod);
     }
   }, [calculationMethod]);
 
-  // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(calculateCountdown, 1000);
     return () => clearInterval(timer);
   }, [nextPrayerInfo]);
 
-  // Format date based on language
   const formatDate = (date: Date, lang: "en" | "ar") => {
     return format(date, 'EEEE, MMMM d, yyyy', {
       locale: lang === "en" ? enUS : ar
     });
   };
 
-  // Toggle language
   const toggleLanguage = () => {
     setLanguage(prevLang => (prevLang === "en" ? "ar" : "en"));
   };
@@ -375,7 +342,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     <div className={`min-h-screen islamic-pattern ${language === "ar" ? "rtl" : "ltr"}`}>
       <div className="geometric-accent"></div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative">
-        {/* Header */}
         <div className="header-container text-center">
           <div className="flex justify-center mb-4">
             <CompasIcon className="h-16 w-16 text-accent animate-pulse" />
@@ -390,7 +356,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           </p>
         </div>
 
-        {/* Location and Date Info */}
         <div className="location-card p-4 mb-6">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <div>
@@ -418,7 +383,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
             </div>
             
             <div className="flex items-center gap-3">
-              {/* Language Toggle */}
               <button 
                 onClick={toggleLanguage} 
                 className="language-toggle hover:bg-opacity-20"
@@ -428,7 +392,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                 <span className={language === "ar" ? "font-bold" : ""}>عربي</span>
               </button>
               
-              {/* Calculation Method Selector */}
               <select 
                 value={calculationMethod}
                 onChange={(e) => setCalculationMethod(e.target.value)}
@@ -445,14 +408,15 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           </div>
         </div>
 
-        {/* Next Prayer Countdown */}
         {nextPrayerInfo && (
           <div className="countdown-container p-6 mb-6 text-center">
             <h2 className="text-lg font-medium text-gray-200">
-              {language === "en" ? "Next Prayer" : "الصلاة القادمة"}
+              {language === "en" ? "Next Time" : "الوقت القادم"}
             </h2>
             <div className="mt-2">
-              <span className="text-2xl font-bold text-accent accent-glow">{prayerNames[language][nextPrayerInfo.name as keyof typeof prayerNames.en] || nextPrayerInfo.name}</span>
+              <span className="text-2xl font-bold text-accent accent-glow">
+                {prayerNames[language][nextPrayerInfo.name as keyof typeof prayerNames.en] || nextPrayerInfo.name}
+              </span>
               <span className="mx-2 text-gray-400">|</span>
               <span className="text-xl font-medium text-white">
                 {language === "en" 
@@ -485,7 +449,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           </div>
         ) : (
           <>
-            {/* Prayer Times Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               {prayerTimes && Object.entries(prayerTimes)
                 .filter(([key]) => key !== "midnight" && key !== "lastThird")
@@ -511,7 +474,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
 
             <div className="geometric-divider"></div>
 
-            {/* Special Times (Midnight and Last Third) */}
             <div className="special-times-container p-4 mb-4">
               <h3 className="text-lg font-medium mb-3 text-center text-white">
                 {language === "en" ? "Special Times" : "أوقات خاصة"}
@@ -553,7 +515,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           </>
         )}
 
-        {/* Footer */}
         <div className="app-footer text-center text-sm mt-8 pt-4">
           <p>
             {language === "en" 
