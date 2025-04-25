@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -21,6 +22,7 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({ initialLanguage = "ar" }) => 
   const [calculationMethod, setCalculationMethod] = useState<string>("4");
   const [hijriDate, setHijriDate] = useState<HijriDate | null>(null);
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const { location, error: locationError, getUserLocation } = useLocation();
 
@@ -179,25 +181,17 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({ initialLanguage = "ar" }) => 
         </div>
 
         {nextPrayerInfo && (
-          <div className="countdown-container p-6 mb-6 text-center">
-            <h2 className="text-lg font-medium text-gray-200">
-              {language === "en" ? "Next Time" : "الوقت القادم"}
-            </h2>
-            <div className="mt-2">
-              <span className="text-2xl font-bold text-accent accent-glow">
-                {prayerNames[language][nextPrayerInfo.name as keyof typeof prayerNames.en] || nextPrayerInfo.name}
-              </span>
-              <span className="mx-2 text-gray-400">|</span>
-              <span className="text-xl font-medium text-white">
-                {language === "en" 
-                  ? convertTo12HourFormat(format(nextPrayerInfo.time, 'HH:mm'))
-                  : format(nextPrayerInfo.time, 'HH:mm')}
-              </span>
-            </div>
-            <div className="mt-3 text-3xl font-bold text-accent pulse-animation accent-glow">
-              {countdownTime}
-            </div>
-          </div>
+          <PrayerCountdown
+            nextPrayerInfo={nextPrayerInfo}
+            prayerNames={prayerNames}
+            language={language}
+            onCountdownEnd={() => {
+              const locationData = { latitude: location.latitude, longitude: location.longitude };
+              if (locationData.latitude && locationData.longitude) {
+                fetchPrayerTimes(locationData.latitude, locationData.longitude, calculationMethod);
+              }
+            }}
+          />
         )}
 
         {isLoading ? (
@@ -207,9 +201,9 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({ initialLanguage = "ar" }) => 
               {language === "en" ? "Loading prayer times..." : "جارٍ تحميل أوقات الصلاة..."}
             </p>
           </div>
-        ) : error ? (
+        ) : locationError ? (
           <div className="bg-red-900/20 text-red-200 p-4 rounded-lg border border-red-500/30 backdrop-blur-sm">
-            <p>{error}</p>
+            <p>{locationError}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="mt-2 px-4 py-2 bg-red-900/30 rounded-md hover:bg-red-800/40"
