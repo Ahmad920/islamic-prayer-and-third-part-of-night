@@ -10,8 +10,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Get the base URL from Vite environment or default to "/islamic-prayer-and-third-part-of-night/"
-  const basePath = import.meta.env.BASE_URL || "/islamic-prayer-and-third-part-of-night/";
+  // Get the base URL from Vite environment, but handle empty string case correctly
+  const basePath = import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/' 
+    ? import.meta.env.BASE_URL 
+    : '';
   
   return (
     <QueryClientProvider client={queryClient}>

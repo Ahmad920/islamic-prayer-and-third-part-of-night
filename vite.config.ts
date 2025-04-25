@@ -6,7 +6,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/islamic-prayer-and-third-part-of-night/',
+  // Use the base path only for production, use root path for development
+  base: mode === 'production' ? '/islamic-prayer-and-third-part-of-night/' : '/',
   server: {
     host: "::",
     port: 8080,
