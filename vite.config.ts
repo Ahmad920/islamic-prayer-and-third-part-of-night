@@ -21,4 +21,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: 'dist',
+    // Ensure proper mobile compatibility
+    chunkSizeWarningLimit: 2000
+  }
 }));
