@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import CompasIcon from "./CompasIcon";
 import MoonIcon from "./MoonIcon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const prayerNames = {
   en: {
@@ -398,18 +399,23 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
                 <span className={language === "ar" ? "font-bold" : ""}>عربي</span>
               </button>
               
-              <select 
-                value={calculationMethod}
-                onChange={(e) => setCalculationMethod(e.target.value)}
-                className="prayer-method-select"
-                aria-label={language === "en" ? "Select calculation method" : "اختر طريقة الحساب"}
-              >
-                {Object.entries(methodNames[language]).map(([key, name]) => (
-                  <option key={key} value={key}>
-                    {name}
-                  </option>
-                ))}
-              </select>
+              <div className="w-full md:w-auto">
+                <Select
+                  value={calculationMethod}
+                  onValueChange={(value) => setCalculationMethod(value)}
+                >
+                  <SelectTrigger className="prayer-method-select w-[200px] max-w-full">
+                    <SelectValue placeholder={language === "en" ? "Select method" : "اختر الطريقة"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-sidebar text-foreground border-white/10">
+                    {Object.entries(methodNames[language]).map(([key, name]) => (
+                      <SelectItem key={key} value={key} className="focus:bg-accent/30 focus:text-white hover:bg-accent/20">
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>

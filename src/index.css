@@ -219,7 +219,16 @@ body::after {
 }
 
 .prayer-method-select {
-  @apply bg-opacity-10 bg-white border border-opacity-20 border-white rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-accent/60 backdrop-blur-sm text-white;
+  @apply bg-opacity-10 bg-white border border-opacity-20 border-white rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-accent/60 backdrop-blur-sm text-white max-w-[220px] w-full;
+}
+
+/* Dropdown styling fixes */
+[data-radix-select-content] {
+  @apply bg-sidebar/90 backdrop-blur-md border-white/10 text-white;
+}
+
+[data-radix-select-item] {
+  @apply text-white hover:bg-accent/20 focus:bg-accent/30 focus:text-white;
 }
 
 .language-toggle {
