@@ -10,8 +10,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Don't use any base path since we've set base: '/' in vite.config.ts
-  const basePath = '';
+  // Get base path from environment or use empty string
+  const basePath = import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/' 
+    ? import.meta.env.BASE_URL 
+    : '';
   
   return (
     <QueryClientProvider client={queryClient}>
