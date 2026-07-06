@@ -4,6 +4,8 @@ import { ar, enUS } from "date-fns/locale";
 import CompasIcon from "./CompasIcon";
 import MoonIcon from "./MoonIcon";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { MapPin } from "lucide-react";
 
 const prayerNames = {
   en: {
