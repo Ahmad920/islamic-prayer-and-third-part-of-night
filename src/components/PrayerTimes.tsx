@@ -557,9 +557,12 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               </span>
               <span className="mx-2 text-gray-400">|</span>
               <span className="text-xl font-medium text-white">
-                {language === "en" 
-                  ? convertTo12HourFormat(format(nextPrayerInfo.time, 'HH:mm'))
-                  : format(nextPrayerInfo.time, 'HH:mm')}
+                {(() => {
+                  const t = new Intl.DateTimeFormat("en-GB", {
+                    timeZone: timezone, hourCycle: "h23", hour: "2-digit", minute: "2-digit",
+                  }).format(nextPrayerInfo.time);
+                  return language === "en" ? convertTo12HourFormat(t) : t;
+                })()}
               </span>
             </div>
             <div className="mt-3 text-3xl font-bold text-accent pulse-animation accent-glow">
