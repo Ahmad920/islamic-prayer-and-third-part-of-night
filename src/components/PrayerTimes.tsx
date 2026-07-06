@@ -84,10 +84,43 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
+  const [timezone, setTimezone] = useState<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [manualDialogOpen, setManualDialogOpen] = useState(false);
   const [manualCityInput, setManualCityInput] = useState("");
   const [manualLookupError, setManualLookupError] = useState<string | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
+
+  // Compute a Date representing wall-clock time in a given IANA timezone
+  const zonedWallTimeToDate = (y: number, m: number, d: number, h: number, min: number, tz: string) => {
+    const utcGuess = Date.UTC(y, m - 1, d, h, min, 0);
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+    const parts = dtf.formatToParts(new Date(utcGuess)).reduce((acc: any, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    const asUTC = Date.UTC(
+      parseInt(parts.year), parseInt(parts.month) - 1, parseInt(parts.day),
+      parseInt(parts.hour), parseInt(parts.minute), parseInt(parts.second)
+    );
+    const offset = asUTC - utcGuess;
+    return new Date(utcGuess - offset);
+  };
+
+  const nowInTz = (tz: string) => {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+    });
+    const parts = dtf.formatToParts(new Date()).reduce((acc: any, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    return { year: parseInt(parts.year), month: parseInt(parts.month), day: parseInt(parts.day) };
+  };
 
   const handleManualLocationSubmit = async () => {
     const query = manualCityInput.trim();
@@ -236,31 +269,39 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     return `${hour12}:${minutes} ${period}`;
   };
 
-  const parseTimeString = (timeStr: string, date: Date = new Date()) => {
+  const parseTimeString = (timeStr: string, dayOffset: number = 0) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
-    return newDate;
+    const { year, month, day } = nowInTz(timezone);
+    // Build a date at the given wall-clock time in the location's timezone.
+    // Using UTC math + dayOffset avoids DST edge cases.
+    const base = Date.UTC(year, month - 1, day + dayOffset);
+    const baseDate = new Date(base);
+    return zonedWallTimeToDate(
+      baseDate.getUTCFullYear(),
+      baseDate.getUTCMonth() + 1,
+      baseDate.getUTCDate(),
+      hours,
+      minutes,
+      timezone
+    );
   };
 
-  const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string, date: Date) => {
-    const maghribDate = parseTimeString(maghribTime, date);
-    
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const fajrDate = parseTimeString(nextFajrTime, nextDay);
-    
+  const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string) => {
+    const maghribDate = parseTimeString(maghribTime, 0);
+    const fajrDate = parseTimeString(nextFajrTime, 1);
+
     const nightDuration = fajrDate.getTime() - maghribDate.getTime();
-    
     const midnightTime = new Date(maghribDate.getTime() + nightDuration / 2);
-    
     const lastThirdTime = new Date(maghribDate.getTime() + (nightDuration * 2) / 3);
-    
-    return {
-      midnight: format(midnightTime, 'HH:mm'),
-      lastThird: format(lastThirdTime, 'HH:mm')
-    };
+
+    // Format in the target timezone
+    const fmt = (d: Date) => new Intl.DateTimeFormat("en-GB", {
+      timeZone: timezone, hourCycle: "h23", hour: "2-digit", minute: "2-digit",
+    }).format(d);
+
+    return { midnight: fmt(midnightTime), lastThird: fmt(lastThirdTime) };
   };
+
 
   const calculateCountdown = () => {
     if (!nextPrayerInfo) return;
@@ -303,12 +344,10 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       { name: 'lastThird', time: parseTimeString(prayerTimes.lastThird) }
     ];
 
-    const tomorrowFajrTime = parseTimeString(tomorrowFajr);
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrowFajrTime.setDate(tomorrow.getDate());
-    
+    const tomorrowFajrTime = parseTimeString(tomorrowFajr, 1);
+
     allTimes.push({ name: 'fajr-tomorrow', time: tomorrowFajrTime });
+
 
     allTimes.sort((a, b) => a.time.getTime() - b.time.getTime());
 
@@ -348,6 +387,8 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       if (data.code === 200 && tomorrowData.code === 200) {
         const times = data.data.timings;
         const tomorrowFajr = tomorrowData.data.timings.Fajr;
+        const apiTz = data.data.meta?.timezone;
+        if (apiTz) setTimezone(apiTz);
         setTomorrowFajr(tomorrowFajr);
 
         const formattedTimes = {
@@ -360,9 +401,8 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         };
 
         const specialTimes = calculateSpecialTimes(
-          times.Maghrib, 
-          tomorrowFajr,
-          date
+          times.Maghrib,
+          tomorrowFajr
         );
 
         setHijriDate(data.data.date.hijri);
@@ -372,8 +412,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           midnight: specialTimes.midnight,
           lastThird: specialTimes.lastThird
         });
-
-        setTimeout(determineNextPrayer, 0);
       } else {
         throw new Error("Failed to fetch prayer times");
       }
@@ -519,9 +557,12 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               </span>
               <span className="mx-2 text-gray-400">|</span>
               <span className="text-xl font-medium text-white">
-                {language === "en" 
-                  ? convertTo12HourFormat(format(nextPrayerInfo.time, 'HH:mm'))
-                  : format(nextPrayerInfo.time, 'HH:mm')}
+                {(() => {
+                  const t = new Intl.DateTimeFormat("en-GB", {
+                    timeZone: timezone, hourCycle: "h23", hour: "2-digit", minute: "2-digit",
+                  }).format(nextPrayerInfo.time);
+                  return language === "en" ? convertTo12HourFormat(t) : t;
+                })()}
               </span>
             </div>
             <div className="mt-3 text-3xl font-bold text-accent pulse-animation accent-glow">
