@@ -84,18 +84,70 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
 
   const getLocationByIP = async () => {
+    // Try multiple IP geolocation services for reliability
+    const providers = [
+      {
+        url: "https://ipwho.is/",
+        parse: (d: any) =>
+          d && d.success !== false && d.latitude && d.longitude
+            ? { latitude: d.latitude, longitude: d.longitude, city: d.city, country: d.country }
+            : null,
+      },
+      {
+        url: "https://get.geojs.io/v1/ip/geo.json",
+        parse: (d: any) =>
+          d && d.latitude && d.longitude
+            ? {
+                latitude: parseFloat(d.latitude),
+                longitude: parseFloat(d.longitude),
+                city: d.city,
+                country: d.country,
+              }
+            : null,
+      },
+      {
+        url: "https://ipapi.co/json/",
+        parse: (d: any) =>
+          d && d.latitude && d.longitude
+            ? { latitude: d.latitude, longitude: d.longitude, city: d.city, country: d.country_name }
+            : null,
+      },
+    ];
+
+    for (const p of providers) {
+      try {
+        const response = await fetch(p.url);
+        if (!response.ok) continue;
+        const data = await response.json();
+        const parsed = p.parse(data);
+        if (parsed) return { ...parsed, source: "ip" };
+      } catch (error) {
+        console.error(`IP provider failed (${p.url}):`, error);
+      }
+    }
+    return null;
+  };
+
+  const getLocationByCityName = async (cityName: string) => {
     try {
-      const response = await fetch("https://ipapi.co/json/");
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&accept-language=${language}`
+      );
       const data = await response.json();
-      return {
-        latitude: data.latitude,
-        longitude: data.longitude,
-        city: data.city,
-        country: data.country_name,
-        source: "ip"
-      };
+      if (data && data.length > 0) {
+        const result = data[0];
+        const parts = (result.display_name || "").split(",").map((s: string) => s.trim());
+        return {
+          latitude: parseFloat(result.lat),
+          longitude: parseFloat(result.lon),
+          city: parts[0] || cityName,
+          country: parts[parts.length - 1] || "",
+          source: "manual",
+        };
+      }
+      return null;
     } catch (error) {
-      console.error("Error getting location by IP:", error);
+      console.error("Error geocoding city:", error);
       return null;
     }
   };
