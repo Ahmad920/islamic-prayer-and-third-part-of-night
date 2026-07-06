@@ -4,6 +4,8 @@ import { ar, enUS } from "date-fns/locale";
 import CompasIcon from "./CompasIcon";
 import MoonIcon from "./MoonIcon";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { MapPin } from "lucide-react";
 
 const prayerNames = {
   en: {
@@ -82,20 +84,96 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
+  const [manualDialogOpen, setManualDialogOpen] = useState(false);
+  const [manualCityInput, setManualCityInput] = useState("");
+  const [manualLookupError, setManualLookupError] = useState<string | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+
+  const handleManualLocationSubmit = async () => {
+    const query = manualCityInput.trim();
+    if (!query) return;
+    setIsLookingUp(true);
+    setManualLookupError(null);
+    const result = await getLocationByCityName(query);
+    setIsLookingUp(false);
+    if (result) {
+      setLocation(result);
+      setError(null);
+      setManualDialogOpen(false);
+      setManualCityInput("");
+      fetchPrayerTimes(result.latitude, result.longitude, calculationMethod);
+    } else {
+      setManualLookupError(
+        language === "ar" ? "تعذر العثور على الموقع" : "Location not found"
+      );
+    }
+  };
 
   const getLocationByIP = async () => {
+    // Try multiple IP geolocation services for reliability
+    const providers = [
+      {
+        url: "https://ipwho.is/",
+        parse: (d: any) =>
+          d && d.success !== false && d.latitude && d.longitude
+            ? { latitude: d.latitude, longitude: d.longitude, city: d.city, country: d.country }
+            : null,
+      },
+      {
+        url: "https://get.geojs.io/v1/ip/geo.json",
+        parse: (d: any) =>
+          d && d.latitude && d.longitude
+            ? {
+                latitude: parseFloat(d.latitude),
+                longitude: parseFloat(d.longitude),
+                city: d.city,
+                country: d.country,
+              }
+            : null,
+      },
+      {
+        url: "https://ipapi.co/json/",
+        parse: (d: any) =>
+          d && d.latitude && d.longitude
+            ? { latitude: d.latitude, longitude: d.longitude, city: d.city, country: d.country_name }
+            : null,
+      },
+    ];
+
+    for (const p of providers) {
+      try {
+        const response = await fetch(p.url);
+        if (!response.ok) continue;
+        const data = await response.json();
+        const parsed = p.parse(data);
+        if (parsed) return { ...parsed, source: "ip" };
+      } catch (error) {
+        console.error(`IP provider failed (${p.url}):`, error);
+      }
+    }
+    return null;
+  };
+
+  const getLocationByCityName = async (cityName: string) => {
     try {
-      const response = await fetch("https://ipapi.co/json/");
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&accept-language=${language}`
+      );
       const data = await response.json();
-      return {
-        latitude: data.latitude,
-        longitude: data.longitude,
-        city: data.city,
-        country: data.country_name,
-        source: "ip"
-      };
+      if (data && data.length > 0) {
+        const result = data[0];
+        const parts = (result.display_name || "").split(",").map((s: string) => s.trim());
+        return {
+          latitude: parseFloat(result.lat),
+          longitude: parseFloat(result.lon),
+          city: parts[0] || cityName,
+          country: parts[parts.length - 1] || "",
+          source: "manual",
+        };
+      }
+      return null;
     } catch (error) {
-      console.error("Error getting location by IP:", error);
+      console.error("Error geocoding city:", error);
       return null;
     }
   };
@@ -366,8 +444,18 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         <div className="location-card p-4 mb-6">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <div>
-              <h2 className="text-lg font-medium text-white">
-                {language === "en" ? "Location" : "الموقع"}: {location.city}, {location.country}
+              <h2 className="text-lg font-medium text-white flex items-center gap-2 flex-wrap">
+                <span>
+                  {language === "en" ? "Location" : "الموقع"}: {location.city}, {location.country}
+                </span>
+                <button
+                  onClick={() => { setManualLookupError(null); setManualDialogOpen(true); }}
+                  className="language-toggle hover:bg-opacity-20 text-sm"
+                  title={language === "ar" ? "تحديد الموقع يدويًا" : "Set location manually"}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>{language === "ar" ? "تغيير" : "Change"}</span>
+                </button>
               </h2>
               
               <div className="flex items-center text-gray-300 mt-1">
@@ -534,6 +622,51 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               : "تم حساب أوقات الصلاة باستخدام واجهة برمجة الأذان"}
           </p>
         </div>
+
+        <Dialog open={manualDialogOpen} onOpenChange={setManualDialogOpen}>
+          <DialogContent className="bg-sidebar text-white border-white/10">
+            <DialogHeader>
+              <DialogTitle className="text-white">
+                {language === "ar" ? "تحديد الموقع يدويًا" : "Set Location Manually"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <label className="text-sm text-gray-300 block">
+                {language === "ar"
+                  ? "أدخل اسم المدينة (والدولة اختياريًا)"
+                  : "Enter city name (country optional)"}
+              </label>
+              <input
+                type="text"
+                value={manualCityInput}
+                onChange={(e) => setManualCityInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleManualLocationSubmit(); }}
+                placeholder={language === "ar" ? "مثال: الرياض، السعودية" : "e.g. Riyadh, Saudi Arabia"}
+                className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/60"
+              />
+              {manualLookupError && (
+                <p className="text-red-300 text-sm">{manualLookupError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <button
+                onClick={() => setManualDialogOpen(false)}
+                className="language-toggle hover:bg-opacity-20"
+              >
+                {language === "ar" ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={handleManualLocationSubmit}
+                disabled={isLookingUp || !manualCityInput.trim()}
+                className="language-toggle hover:bg-opacity-20 disabled:opacity-50"
+              >
+                {isLookingUp
+                  ? (language === "ar" ? "جارٍ البحث..." : "Searching...")
+                  : (language === "ar" ? "بحث" : "Search")}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
