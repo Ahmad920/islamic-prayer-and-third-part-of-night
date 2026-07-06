@@ -444,8 +444,18 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         <div className="location-card p-4 mb-6">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <div>
-              <h2 className="text-lg font-medium text-white">
-                {language === "en" ? "Location" : "الموقع"}: {location.city}, {location.country}
+              <h2 className="text-lg font-medium text-white flex items-center gap-2 flex-wrap">
+                <span>
+                  {language === "en" ? "Location" : "الموقع"}: {location.city}, {location.country}
+                </span>
+                <button
+                  onClick={() => { setManualLookupError(null); setManualDialogOpen(true); }}
+                  className="language-toggle hover:bg-opacity-20 text-sm"
+                  title={language === "ar" ? "تحديد الموقع يدويًا" : "Set location manually"}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>{language === "ar" ? "تغيير" : "Change"}</span>
+                </button>
               </h2>
               
               <div className="flex items-center text-gray-300 mt-1">
