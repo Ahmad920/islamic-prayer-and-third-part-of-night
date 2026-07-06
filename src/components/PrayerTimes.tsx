@@ -84,6 +84,30 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
+  const [manualDialogOpen, setManualDialogOpen] = useState(false);
+  const [manualCityInput, setManualCityInput] = useState("");
+  const [manualLookupError, setManualLookupError] = useState<string | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+
+  const handleManualLocationSubmit = async () => {
+    const query = manualCityInput.trim();
+    if (!query) return;
+    setIsLookingUp(true);
+    setManualLookupError(null);
+    const result = await getLocationByCityName(query);
+    setIsLookingUp(false);
+    if (result) {
+      setLocation(result);
+      setError(null);
+      setManualDialogOpen(false);
+      setManualCityInput("");
+      fetchPrayerTimes(result.latitude, result.longitude, calculationMethod);
+    } else {
+      setManualLookupError(
+        language === "ar" ? "تعذر العثور على الموقع" : "Location not found"
+      );
+    }
+  };
 
   const getLocationByIP = async () => {
     // Try multiple IP geolocation services for reliability
