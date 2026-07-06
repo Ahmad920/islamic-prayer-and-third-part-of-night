@@ -387,6 +387,8 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       if (data.code === 200 && tomorrowData.code === 200) {
         const times = data.data.timings;
         const tomorrowFajr = tomorrowData.data.timings.Fajr;
+        const apiTz = data.data.meta?.timezone;
+        if (apiTz) setTimezone(apiTz);
         setTomorrowFajr(tomorrowFajr);
 
         const formattedTimes = {
@@ -399,9 +401,8 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
         };
 
         const specialTimes = calculateSpecialTimes(
-          times.Maghrib, 
-          tomorrowFajr,
-          date
+          times.Maghrib,
+          tomorrowFajr
         );
 
         setHijriDate(data.data.date.hijri);
@@ -411,8 +412,6 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
           midnight: specialTimes.midnight,
           lastThird: specialTimes.lastThird
         });
-
-        setTimeout(determineNextPrayer, 0);
       } else {
         throw new Error("Failed to fetch prayer times");
       }
