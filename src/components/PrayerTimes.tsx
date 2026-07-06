@@ -344,12 +344,10 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
       { name: 'lastThird', time: parseTimeString(prayerTimes.lastThird) }
     ];
 
-    const tomorrowFajrTime = parseTimeString(tomorrowFajr);
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrowFajrTime.setDate(tomorrow.getDate());
-    
+    const tomorrowFajrTime = parseTimeString(tomorrowFajr, 1);
+
     allTimes.push({ name: 'fajr-tomorrow', time: tomorrowFajrTime });
+
 
     allTimes.sort((a, b) => a.time.getTime() - b.time.getTime());
 
