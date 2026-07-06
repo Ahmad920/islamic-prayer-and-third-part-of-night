@@ -84,10 +84,43 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
   const [hijriDate, setHijriDate] = useState<any>(null);
   const [countdownTime, setCountdownTime] = useState<string>("00:00:00");
   const [tomorrowFajr, setTomorrowFajr] = useState<string>("");
+  const [timezone, setTimezone] = useState<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [manualDialogOpen, setManualDialogOpen] = useState(false);
   const [manualCityInput, setManualCityInput] = useState("");
   const [manualLookupError, setManualLookupError] = useState<string | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
+
+  // Compute a Date representing wall-clock time in a given IANA timezone
+  const zonedWallTimeToDate = (y: number, m: number, d: number, h: number, min: number, tz: string) => {
+    const utcGuess = Date.UTC(y, m - 1, d, h, min, 0);
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+    const parts = dtf.formatToParts(new Date(utcGuess)).reduce((acc: any, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    const asUTC = Date.UTC(
+      parseInt(parts.year), parseInt(parts.month) - 1, parseInt(parts.day),
+      parseInt(parts.hour), parseInt(parts.minute), parseInt(parts.second)
+    );
+    const offset = asUTC - utcGuess;
+    return new Date(utcGuess - offset);
+  };
+
+  const nowInTz = (tz: string) => {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+    });
+    const parts = dtf.formatToParts(new Date()).reduce((acc: any, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    return { year: parseInt(parts.year), month: parseInt(parts.month), day: parseInt(parts.day) };
+  };
 
   const handleManualLocationSubmit = async () => {
     const query = manualCityInput.trim();
