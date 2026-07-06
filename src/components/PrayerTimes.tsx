@@ -269,31 +269,39 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
     return `${hour12}:${minutes} ${period}`;
   };
 
-  const parseTimeString = (timeStr: string, date: Date = new Date()) => {
+  const parseTimeString = (timeStr: string, dayOffset: number = 0) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
-    return newDate;
+    const { year, month, day } = nowInTz(timezone);
+    // Build a date at the given wall-clock time in the location's timezone.
+    // Using UTC math + dayOffset avoids DST edge cases.
+    const base = Date.UTC(year, month - 1, day + dayOffset);
+    const baseDate = new Date(base);
+    return zonedWallTimeToDate(
+      baseDate.getUTCFullYear(),
+      baseDate.getUTCMonth() + 1,
+      baseDate.getUTCDate(),
+      hours,
+      minutes,
+      timezone
+    );
   };
 
-  const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string, date: Date) => {
-    const maghribDate = parseTimeString(maghribTime, date);
-    
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const fajrDate = parseTimeString(nextFajrTime, nextDay);
-    
+  const calculateSpecialTimes = (maghribTime: string, nextFajrTime: string) => {
+    const maghribDate = parseTimeString(maghribTime, 0);
+    const fajrDate = parseTimeString(nextFajrTime, 1);
+
     const nightDuration = fajrDate.getTime() - maghribDate.getTime();
-    
     const midnightTime = new Date(maghribDate.getTime() + nightDuration / 2);
-    
     const lastThirdTime = new Date(maghribDate.getTime() + (nightDuration * 2) / 3);
-    
-    return {
-      midnight: format(midnightTime, 'HH:mm'),
-      lastThird: format(lastThirdTime, 'HH:mm')
-    };
+
+    // Format in the target timezone
+    const fmt = (d: Date) => new Intl.DateTimeFormat("en-GB", {
+      timeZone: timezone, hourCycle: "h23", hour: "2-digit", minute: "2-digit",
+    }).format(d);
+
+    return { midnight: fmt(midnightTime), lastThird: fmt(lastThirdTime) };
   };
+
 
   const calculateCountdown = () => {
     if (!nextPrayerInfo) return;
