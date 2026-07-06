@@ -622,6 +622,51 @@ const PrayerTimes: React.FC<PrayerTimesProps> = ({
               : "تم حساب أوقات الصلاة باستخدام واجهة برمجة الأذان"}
           </p>
         </div>
+
+        <Dialog open={manualDialogOpen} onOpenChange={setManualDialogOpen}>
+          <DialogContent className="bg-sidebar text-white border-white/10">
+            <DialogHeader>
+              <DialogTitle className="text-white">
+                {language === "ar" ? "تحديد الموقع يدويًا" : "Set Location Manually"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <label className="text-sm text-gray-300 block">
+                {language === "ar"
+                  ? "أدخل اسم المدينة (والدولة اختياريًا)"
+                  : "Enter city name (country optional)"}
+              </label>
+              <input
+                type="text"
+                value={manualCityInput}
+                onChange={(e) => setManualCityInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleManualLocationSubmit(); }}
+                placeholder={language === "ar" ? "مثال: الرياض، السعودية" : "e.g. Riyadh, Saudi Arabia"}
+                className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/60"
+              />
+              {manualLookupError && (
+                <p className="text-red-300 text-sm">{manualLookupError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <button
+                onClick={() => setManualDialogOpen(false)}
+                className="language-toggle hover:bg-opacity-20"
+              >
+                {language === "ar" ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={handleManualLocationSubmit}
+                disabled={isLookingUp || !manualCityInput.trim()}
+                className="language-toggle hover:bg-opacity-20 disabled:opacity-50"
+              >
+                {isLookingUp
+                  ? (language === "ar" ? "جارٍ البحث..." : "Searching...")
+                  : (language === "ar" ? "بحث" : "Search")}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
